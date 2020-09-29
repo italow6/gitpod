@@ -361,7 +361,6 @@ export class WorkspaceReadyTaskStarter implements BackendApplicationContribution
         }
 
         this.logger.info("workspace content is ready - starting tasks", { phase, message });
-        this.starter.start(phase);
         this.contentReadyService.markContentReady();
     }
 

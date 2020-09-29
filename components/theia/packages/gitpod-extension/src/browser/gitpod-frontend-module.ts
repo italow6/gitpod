@@ -62,6 +62,7 @@ import { ConnectionStatusOptions } from '@theia/core/lib/browser/connection-stat
 import { extensionsModule } from './extensions/extensions-module';
 import { GitpodUserStorageContribution } from './gitpod-user-storage-contribution';
 import { GitpodUserStorageProvider } from './gitpod-user-storage-provider';
+import { GitpodTaskContribution } from './gitpod-task-contribution';
 
 export default new ContainerModule((bind, unbind, isBound, rebind) => {
     rebind(CommonFrontendContribution).to(GitpodCommonFrontendContribution).inSingletonScope();
@@ -83,6 +84,9 @@ export default new ContainerModule((bind, unbind, isBound, rebind) => {
     bind(GitpodOpenContext).toSelf().inSingletonScope();
     bind(FrontendApplicationContribution).toService(GitpodOpenContext);
     rebind(InitialGitHubDataProvider).toService(GitpodOpenContext);
+
+    bind(GitpodTaskContribution).toSelf().inSingletonScope();
+    bind(FrontendApplicationContribution).toService(GitpodTaskContribution);
 
     bind(GitpodShareWidget).toSelf().inSingletonScope();
     bind(GitpodShareDialog).toSelf().inSingletonScope();
