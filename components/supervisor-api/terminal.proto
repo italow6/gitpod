@@ -39,7 +39,10 @@ service TerminalService {
     rpc SetSize(SetTerminalSizeRequest) returns (SetTerminalSizeResponse) {}
 }
 
-message OpenTerminalRequest {}
+message OpenTerminalRequest {
+    string command = 1;
+    map<string, string> env = 2;
+}
 message OpenTerminalResponse {
     string alias = 1;
 

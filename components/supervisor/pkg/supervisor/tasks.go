@@ -61,7 +61,15 @@ func (tm *tasksManager) Run(ctx context.Context, wg *sync.WaitGroup) {
 		}
 		taskLog := log.WithField("command", command)
 		taskLog.Info("starting a task terminal...")
-		resp, err := tm.terminalService.Open(ctx, &api.OpenTerminalRequest{})
+		openRequest := &api.OpenTerminalRequest{
+			Command: command,
+		}
+		if task.Env != nil {
+			openRequest.Env = *task.Env
+		} else {
+			openRequest.Env = make(map[string]string)
+		}
+		resp, err := tm.terminalService.Open(ctx, openRequest)
 		if err != nil {
 			taskLog.WithError(err).Fatal("cannot open new task terminal")
 			continue
@@ -69,18 +77,6 @@ func (tm *tasksManager) Run(ctx context.Context, wg *sync.WaitGroup) {
 
 		alias := resp.Alias
 		taskLog = taskLog.WithField("alias", alias)
-		_, err = tm.terminalService.Write(ctx, &api.WriteTerminalRequest{
-			Alias: alias,
-			Stdin: []byte(command),
-		})
-		if err != nil {
-			taskLog.WithError(err).Fatal("cannot send a command to a task terminal")
-			err = tm.terminalService.Mux.Close(alias)
-			if err != nil {
-				taskLog.WithError(err).Fatal("cannot close a task terminal")
-			}
-			continue
-		}
 
 		tm.tasks[alias] = &api.TasksStatus{
 			Alias: alias,

@@ -50,9 +50,22 @@ func (srv *MuxTerminalService) RegisterREST(mux *runtime.ServeMux, grpcEndpoint 
 
 // Open opens a new terminal running the login shell
 func (srv *MuxTerminalService) Open(ctx context.Context, req *api.OpenTerminalRequest) (*api.OpenTerminalResponse, error) {
-	cmd := exec.Command(srv.LoginShell[0], srv.LoginShell[1:]...)
+	shellArg := srv.LoginShell[1:]
+	arg := shellArg
+	if req.Command != "" {
+		shellArgLen := len(shellArg)
+		arg = make([]string, shellArgLen+2)
+		copy(arg[0:shellArgLen], shellArg)
+		arg[shellArgLen] = "-c"
+		arg[shellArgLen+1] = req.Command
+	}
+
+	cmd := exec.Command(srv.LoginShell[0], arg...)
 	cmd.Dir = srv.DefaultWorkdir
 	cmd.Env = append(os.Environ(), "TERM=xterm-color")
+	for key, value := range req.Env {
+		cmd.Env = append(cmd.Env, key+"="+value)
+	}
 	alias, err := srv.Mux.Start(cmd)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
